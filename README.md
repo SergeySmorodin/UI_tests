@@ -6,18 +6,8 @@ pytest-playwright
 # Фабрика тестовых даанных
 factory_boy
 
-# для работы с моками и патчами в pytest
-pytest-mock
-
 # для анализа покрытия кода тестами
-coverage
 pytest-cov
-
-# pytest-плагин для тестирования Django-проектов
-pytest-django
-
-# для валидации JSON-структур по схемам
-jsonschema
 
 # для параллельного запуска тестов 
 pytest-xdist
@@ -28,19 +18,19 @@ allure-pytest
 
 # Установка библиотек
 ```bash
-poetry add pytest-playwright factory_boy pytest-mock coverage pytest-cov pytest-django jsonschema pytest-xdist allure-pytest --group dev
+poetry add pytest-playwright factory_boy pytest-cov pytest-xdist allure-pytest
 
 playwright install
 ```
 
 # Необходимо для работы тестов
+### Файл .env в корне каталога
 ```
-
-```
-
-# Настройка тестовой БД
-``` 
-
+SITE_URL=http://example.ru/
+LOGIN=xxx
+PASSWORD=xxx
+BROWSER_HEADLESS=false
+DEFAULT_TIMEOUT=30000
 ```
 
 # Команды для запуска тестов
@@ -48,7 +38,7 @@ playwright install
 * Команда для параллельного запуска всех тестов
 ```pytest -n auto```
 * Подробный вывод с именами тестов и print-ами и открытием страниц в браузере
-```pytest -v -s -n auto --headed```
+```pytest -v -s --headed```
 
 #### Запуск по маркерам
 * Запуск тестов по маркерам, используется опция -m <выражение_маркера>
@@ -73,6 +63,7 @@ playwright install
 ##### Запуск тестов по имени
 * Запуск тестов по маске имени
 ```pytest -k "test_api_projects"```
+* ```pytest test_login.py::test_successful_login```
 
 #### Тесты вложенности сериализаторов (запускается только с флагом deep_serializer)
 * Генерацией отчета в serializer_reports

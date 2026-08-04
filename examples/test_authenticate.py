@@ -1,7 +1,7 @@
 import re
 from time import sleep
 
-from playwright.sync_api import Page, expect, Route, Dialog, BrowserContext
+from playwright.sync_api import Page, expect, Route
 
 
 def test_wiki(page: Page):
@@ -51,9 +51,3 @@ def test_response(page: Page):
     page.get_by_role("button", name="Войти").click()
     page.get_by_role("link", name="Мой профиль").click()
     sleep(5)
-
-
-
-
-
-
