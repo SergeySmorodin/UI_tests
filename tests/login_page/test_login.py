@@ -1,13 +1,12 @@
 import pytest
-from playwright.sync_api import Page
 
 from pages.login_page import LoginPage
 
 
 @pytest.mark.usefixtures("vpn_connection")
-class TestLogin:
+class TestLoginPage:
 
-    def test_successful_login(self, page: Page, test_config):
+    def test_successful_login(self, page, test_config):
         """Тест успешной авторизации"""
         login_page = LoginPage(page)
         login_page.login(test_config)
@@ -16,14 +15,14 @@ class TestLogin:
             f"Авторизация не выполнена. Текущий URL: {page.url}"
         print(f"✓ Успешная авторизация. URL: {page.url}")
 
-    def test_login_form_visibility(self, page: Page, test_config):
+    def test_login_form_visibility(self, page, test_config):
         """Тест отображения формы логина"""
         login_page = LoginPage(page)
         login_page.open(test_config)
         login_page.check_login_form_visible()
         print("✓ Форма логина отображается корректно")
 
-    def test_login_with_wrong_password(self, page: Page, test_config):
+    def test_login_with_wrong_password(self, page, test_config):
         """Тест с неверным паролем"""
         login_page = LoginPage(page)
         login_page.open(test_config)
@@ -42,7 +41,7 @@ class TestLogin:
                 "Ожидалась ошибка, но вход выполнен успешно"
             print("✓ Вход не выполнен (как и ожидалось)")
 
-    def test_empty_credentials(self, page: Page, test_config):
+    def test_empty_credentials(self, page, test_config):
         """Тест с пустыми полями"""
         login_page = LoginPage(page)
         login_page.open(test_config)

@@ -55,7 +55,7 @@ class LoginPage(BasePage):
         """Проверить успешность входа"""
         try:
             # Ждем пока URL перестанет содержать "login"
-            self.page.wait_for_url("**/!(*login*)", timeout=10000)
+            self.page.wait_for_url("**/!(*login*)", timeout=1000)
             print(f"✓ URL изменился: {self.page.url}")
             return True
         except:

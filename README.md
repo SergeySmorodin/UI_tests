@@ -79,3 +79,9 @@ DEFAULT_TIMEOUT=30000
 ```pytest -n auto --alluredir=./allure-results;allure serve ./allure-results```
 
 
+#### Полезные команды playwright
+* Генерация кода Codegen
+```playwright codegen demo.playwright.dev/todomvc/#/```
+* Доступные опции Codegen
+```playwright codegen --help```
+

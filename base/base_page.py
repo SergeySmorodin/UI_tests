@@ -83,7 +83,6 @@ class BasePage:
         import os
         os.makedirs("screenshots", exist_ok=True)
         self.page.screenshot(path=f"screenshots/{name}.png")
-        print(f"📸 Скриншот сохранен: screenshots/{name}.png")
 
     def debug_info(self):
         """Вывести отладочную информацию"""
