@@ -44,10 +44,8 @@ def browser(test_config):
         # Используем значение из конфигурации
         headless_mode = test_config.headless
 
-        print(f"\n🌐 Запуск браузера (headless={headless_mode})")
-
         browser = p.chromium.launch(
-            headless=headless_mode,  # Берем из конфигурации
+            headless=headless_mode,
             args=[
                 '--ignore-certificate-errors',
                 '--disable-web-security',
