@@ -1,12 +1,7 @@
 from playwright.sync_api import Page
 
-from base.base_page import BasePage
 from config import VPNConfig
-
-# Selectors
-USERNAME = "#username"
-PASSWORD = "#pass"
-LOGIN_BUTTON = "button:has-text('Войти')"
+from pages.base_page import BasePage
 
 
 class LoginPage(BasePage):
@@ -18,15 +13,14 @@ class LoginPage(BasePage):
 
     def _init_locators(self):
         """Инициализация локаторов"""
-        self.username_input = self.page.locator(USERNAME)
-        self.password_input = self.page.locator(PASSWORD)
+        self.username_input = self.page.locator("#username")
+        self.password_input = self.page.locator("#pass")
         self.login_button = self.page.get_by_role("button", name="Вход")
         self.error_message = self.page.locator('.error-message, .alert-danger')
 
     def open(self, config: VPNConfig):
         """Открыть страницу логина"""
         self.open_relative(config, "login")
-        # Ждем загрузки формы
         self.wait_for_element(self.username_input)
 
     def check_login_form_visible(self):
@@ -64,9 +58,9 @@ class LoginPage(BasePage):
             if "login" in current_url:
                 error = self.get_error_message()
                 if error:
-                    print(f"❌ Авторизация не удалась: {error}")
+                    print(f"Авторизация не удалась: {error}")
                 else:
-                    print(f"❌ Авторизация не удалась без сообщения об ошибке")
+                    print(f"Авторизация не удалась без сообщения об ошибке")
                 return False
 
             return True

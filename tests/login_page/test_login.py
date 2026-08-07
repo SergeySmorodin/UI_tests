@@ -20,7 +20,6 @@ class TestLoginPage:
         login_page = LoginPage(page)
         login_page.open(test_config)
         login_page.check_login_form_visible()
-        print("✓ Форма логина отображается корректно")
 
     def test_login_with_wrong_password(self, page, test_config):
         """Тест с неверным паролем"""
@@ -39,7 +38,6 @@ class TestLoginPage:
         else:
             assert not login_page.is_login_successful(), \
                 "Ожидалась ошибка, но вход выполнен успешно"
-            print("✓ Вход не выполнен (как и ожидалось)")
 
     def test_empty_credentials(self, page, test_config):
         """Тест с пустыми полями"""
@@ -49,4 +47,3 @@ class TestLoginPage:
 
         assert not login_page.is_login_successful(), \
             "Вход не должен быть выполнен с пустыми полями"
-        print("✓ Вход с пустыми полями заблокирован")

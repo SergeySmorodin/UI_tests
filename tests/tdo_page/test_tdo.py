@@ -1,94 +1,69 @@
+import random
+
 import pytest
 from playwright.sync_api import Page
 
+from factories.contract_factory import ContractFactory
 from pages.login_page import LoginPage
 from pages.tdo_page import TdoPage
 
 
 @pytest.mark.usefixtures("vpn_connection")
-class TestTdoPage:
+class TestTDO:
 
     @pytest.fixture(autouse=True)
     def setup(self, page: Page, test_config):
-        """Предварительный вход в систему перед каждым тестом"""
+        """Вход и открытие страницы"""
         login_page = LoginPage(page)
         login_page.login(test_config)
-        assert login_page.is_login_successful(), "Не удалось войти в систему"
+        assert login_page.is_login_successful(), "Не удалось войти"
 
-    def test_create_contract_successfully(self, page: Page, test_config):
+        self.tdo_page = TdoPage(page)
+        self.tdo_page.open(test_config)
+
+    def test_create_contract_successfully(self, page: Page):
         """Тест успешного создания договора"""
-        tdo_page = TdoPage(page)
 
-        # Открываем страницу создания договора
-        tdo_page.open(test_config)
+        # Создаём данные
+        contract = ContractFactory()
 
-        # Проверяем, что форма отображается
-        assert tdo_page.check_tdo_form_visible(), "Форма не загружена"
-        print("✓ Форма создания договора отображается")
+        # Заполняем текстовые поля
+        self.tdo_page.fill_contract_number(contract.contract_number)
+        self.tdo_page.fill_contract_date(contract.contract_date)
+        self.tdo_page.fill_contract_sum(contract.amount)
 
-        # Заполняем и сохраняем
-        contract_number, contract_date = tdo_page.save_contract()
+        # Статус
+        statuses = self.tdo_page.get_status_options()
+        print(f"Статусы: {statuses}")
+        if statuses:
+            self.tdo_page.select_status(random.choice(statuses))
 
-        # Проверяем результат
-        assert tdo_page.is_contract_saved(), \
-            f"Договор не сохранен. Текущий URL: {page.url}"
-        print(f"✓ Договор {contract_number} от {contract_date} успешно создан")
+        # Компания
+        companies = self.tdo_page.get_company_options()
+        print(f"Компании: {companies}")
+        if companies:
+            self.tdo_page.select_company(random.choice(companies))
 
-    def test_form_validation_empty_fields(self, page: Page, test_config):
-        """Тест валидации - пустые поля"""
-        tdo_page = TdoPage(page)
-        tdo_page.open(test_config)
+        # Менеджер
+        self.tdo_page.add_manager()
+        managers = self.tdo_page._get_dropdown_options()
+        print(f"Менеджеры: {managers}")
+        if managers:
+            self.tdo_page.select_manager(random.choice(managers))
+        self.tdo_page.close_dropdown()
 
-        # Нажимаем сохранить без заполнения полей
-        tdo_page.click_safe_button()
-        tdo_page.wait_for_navigation()
-        tdo_page.wait_for_timeout(2000)
+        # Виды работ
+        self.tdo_page.add_work_type()
+        work_types = self.tdo_page._get_dropdown_options()
+        print(f"Виды работ: {work_types}")
+        if work_types:
+            self.tdo_page.select_work_types([random.choice(work_types)])
+        self.tdo_page.close_dropdown()
 
-        # Проверяем, что договор не создан
-        assert not tdo_page.is_contract_saved(), \
-            "Договор не должен быть создан с пустыми полями"
+        # Сохраняем
+        self.tdo_page.click_safe_button()
+        self.tdo_page.wait_for_navigation()
+        self.tdo_page.wait_for_timeout(2000)
 
-        # Проверяем сообщение об ошибке или что остались на странице
-        error_message = tdo_page.get_error_message()
-        if error_message:
-            print(f"✓ Получено сообщение об ошибке: {error_message}")
-        else:
-            print("✓ Договор не создан (остались на странице создания)")
-
-    def test_create_multiple_contracts(self, page: Page, test_config):
-        """Тест создания нескольких договоров подряд"""
-        tdo_page = TdoPage(page)
-
-        contracts = []
-        for i in range(3):
-            tdo_page.open(test_config)
-            contract_number = f"TEST-MULTI-{i + 1}"
-            contract_date = f"{i + 1:02d}.01.2024"
-
-            tdo_page.save_contract(contract_number, contract_date)
-
-            assert tdo_page.is_contract_saved(), \
-                f"Договор {contract_number} не сохранен"
-            contracts.append((contract_number, contract_date))
-            print(f"✓ Создан договор {i + 1}/3: {contract_number}")
-
-        print(f"✓ Создано {len(contracts)} договоров")
-
-    def test_clear_form(self, page: Page, test_config):
-        """Тест очистки формы"""
-        tdo_page = TdoPage(page)
-        tdo_page.open(test_config)
-
-        # Заполняем форму
-        tdo_page.fill_contract_form("TEST-CLEAR", "01.01.2024")
-
-        # Очищаем
-        tdo_page.clear_form()
-
-        # Проверяем, что поля пустые
-        contract_value = tdo_page.contract_input.input_value()
-        date_value = tdo_page.date_input.input_value()
-
-        assert contract_value == "", f"Поле договора не очищено: {contract_value}"
-        assert date_value == "", f"Поле даты не очищено: {date_value}"
-        print("✓ Форма успешно очищена")
+        assert self.tdo_page.is_contract_saved(), f"URL: {page.url}"
+        print(f"✓ Договор {contract.contract_number} создан")

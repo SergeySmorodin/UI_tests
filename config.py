@@ -14,7 +14,6 @@ class VPNConfig:
     site_url: str
     login: str
     password: str
-    dashboard_url: Optional[str] = None
     timeout: int = 30000
     headless: bool = False
 

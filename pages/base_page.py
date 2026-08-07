@@ -1,3 +1,5 @@
+import datetime
+
 from playwright.sync_api import Page, expect, Locator
 
 from config import VPNConfig
@@ -99,3 +101,10 @@ class BasePage:
     def wait_for_timeout(self, milliseconds: int = 1000):
         """Пауза в миллисекундах"""
         self.page.wait_for_timeout(milliseconds)
+
+    # === Вспомогательные методы ===
+
+
+
+
+
