@@ -1,3 +1,4 @@
+import os
 import re
 import subprocess
 
@@ -5,6 +6,20 @@ import pytest
 from playwright.sync_api import sync_playwright
 
 from config import vpn_config
+
+
+@pytest.fixture(scope="function")
+def test_pdf_file():
+    """Создать уникальный PDF для каждого теста"""
+    import uuid
+    os.makedirs("test_files", exist_ok=True)
+    file_path = f"test_files/test_{uuid.uuid4().hex[:8]}.pdf"
+    with open(file_path, 'wb') as f:
+        f.write(b"%PDF-1.4 test file")
+    yield file_path
+    # Удалить после теста
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 
 @pytest.fixture(scope="session")

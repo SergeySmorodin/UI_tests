@@ -1,5 +1,3 @@
-import random
-
 import pytest
 from playwright.sync_api import Page
 
@@ -21,49 +19,29 @@ class TestTDO:
         self.tdo_page = TdoPage(page)
         self.tdo_page.open(test_config)
 
-    def test_create_contract_successfully(self, page: Page):
+    def test_create_contract_successfully(self, page: Page, test_pdf_file):
         """Тест успешного создания договора"""
 
-        # Создаём данные
         contract = ContractFactory()
 
-        # Заполняем текстовые поля
+        # Текстовые поля
         self.tdo_page.fill_contract_number(contract.contract_number)
         self.tdo_page.fill_contract_date(contract.contract_date)
         self.tdo_page.fill_contract_sum(contract.amount)
 
-        # Статус
-        statuses = self.tdo_page.get_status_options()
-        print(f"Статусы: {statuses}")
-        if statuses:
-            self.tdo_page.select_status(random.choice(statuses))
+        # Выпадающие списки
+        self.tdo_page.select_random_status()
+        self.tdo_page.select_random_company()
+        self.tdo_page.select_random_manager()
+        self.tdo_page.select_random_work_type()
 
-        # Компания
-        companies = self.tdo_page.get_company_options()
-        print(f"Компании: {companies}")
-        if companies:
-            self.tdo_page.select_company(random.choice(companies))
-
-        # Менеджер
-        self.tdo_page.add_manager()
-        managers = self.tdo_page._get_dropdown_options()
-        print(f"Менеджеры: {managers}")
-        if managers:
-            self.tdo_page.select_manager(random.choice(managers))
-        self.tdo_page.close_dropdown()
-
-        # Виды работ
-        self.tdo_page.add_work_type()
-        work_types = self.tdo_page._get_dropdown_options()
-        print(f"Виды работ: {work_types}")
-        if work_types:
-            self.tdo_page.select_work_types([random.choice(work_types)])
-        self.tdo_page.close_dropdown()
+        # Загрузка файла
+        self.tdo_page.upload_file(test_pdf_file)
 
         # Сохраняем
         self.tdo_page.click_safe_button()
         self.tdo_page.wait_for_navigation()
         self.tdo_page.wait_for_timeout(2000)
 
-        assert self.tdo_page.is_contract_saved(), f"URL: {page.url}"
+        assert self.tdo_page.is_contract_saved()
         print(f"✓ Договор {contract.contract_number} создан")

@@ -54,12 +54,16 @@ class ContractFactory(factory.Factory):
         lambda: f"{round(random.uniform(10000, 10000000), 2):,}".replace(',', ' ')
     )
 
+    file_path = factory.LazyFunction(
+        lambda: f"test_files/contract_{fake.unique.random_number(digits=6)}.pdf"
+    )
+
     # Заглушки
     status = ''
     company = ''
     manager = ''
     work_types = factory.LazyFunction(lambda: [])
-    file_path = ''
+
 
     @classmethod
     def with_real_data(cls, tdo_page):
