@@ -1,5 +1,7 @@
 import random
+
 from playwright.sync_api import Page
+
 from config import VPNConfig
 from pages.base_page import BasePage
 
@@ -19,7 +21,8 @@ class TdoPage(BasePage):
         self.sum_input = self.page.get_by_placeholder("Введите сумму")
         self.status_select = self.page.locator("select, combobox").first
         self.company_button = self.page.get_by_role("button", name="Выберите компанию")
-        self.safe_button = self.page.locator('[type="submit"]')
+        self.safe_button = self.page.get_by_role("button", name="Сохранить")
+        self.close_button = self.page.get_by_role("button", name="Закрыть")
         self.title = self.page.get_by_text("Создание договора")
         self.file_upload = self.page.locator("input[type='file']")
 
@@ -29,9 +32,14 @@ class TdoPage(BasePage):
         self.wait_for_timeout(1000)
 
     # === Текстовые поля ===
-    def fill_contract_number(self, number: str): self.contract_input.fill(number)
-    def fill_contract_date(self, date: str): self.date_input.fill(date)
-    def fill_contract_sum(self, amount: str): self.sum_input.fill(str(amount))
+    def fill_contract_number(self, number: str):
+        self.contract_input.fill(number)
+
+    def fill_contract_date(self, date: str):
+        self.date_input.fill(date)
+
+    def fill_contract_sum(self, amount: str):
+        self.sum_input.fill(str(amount))
 
     # === Статус ===
     def select_status(self, status: str):
@@ -60,14 +68,13 @@ class TdoPage(BasePage):
         companies = self._get_dropdown_options(exclude=['Выберите компанию'])
         if companies:
             self.select_company(random.choice(companies))
-        self.close_dropdown() # fixme
+        self.close_dropdown()  # fixme
 
     # === Менеджер ===
     def open_manager_dropdown(self):
         """Нажать + для добавления менеджера"""
         self.page.locator('button[title="Добавить менеджера"]').click()
         self.wait_for_timeout(500)
-
 
     def select_random_manager(self):
         """Добавить случайного менеджера"""
@@ -81,12 +88,22 @@ class TdoPage(BasePage):
             if options:
                 random.choice(options).click()
 
+    def delete_manager(self):
+        """Удалить добавленного менеджера"""
+        self.page.locator("xpath=//*[contains(text(), 'Менеджеры')]/following::button[@title='Удалить'][1]").click()
+        self.wait_for_timeout(300)
+        print("✓ Менеджер удалён")
+
+    def is_manager_present(self) -> bool:
+        """Проверить, есть ли добавленный менеджер"""
+        return self.page.locator(
+            "xpath=//*[contains(text(), 'Менеджеры')]/following::button[@title='Удалить'][1]").is_visible()
+
     # === Виды работ ===
     def open_work_type_dropdown(self):
         """Нажать + для добавления вида работ"""
         self.page.locator('button[title="Добавить вид работ"]').click()
         self.wait_for_timeout(500)
-
 
     def select_random_work_type(self):
         """Добавить случайный вид работ"""
@@ -99,12 +116,31 @@ class TdoPage(BasePage):
             if options:
                 random.choice(options).click()
 
+    def delete_work_type(self):
+        """Удалить добавленный вид работ"""
+        self.page.locator("xpath=//*[contains(text(), 'Виды работ')]/following::button[@title='Удалить'][1]").click()
+        self.wait_for_timeout(300)
+        print("✓ Вид работ удалён")
+
+    def is_work_type_present(self) -> bool:
+        """Проверить, есть ли добавленный вид работ"""
+        return self.page.locator(
+            "xpath=//*[contains(text(), 'Виды работ')]/following::button[@title='Удалить'][1]").is_visible()
+
     # === Файл ===
-    def upload_file(self, file_path: str): self.file_upload.set_input_files(file_path)
+    def upload_file(self, file_path: str):
+        self.file_upload.set_input_files(file_path)
 
     # === Сохранение ===
-    def click_safe_button(self): self.safe_button.click()
-    def is_contract_saved(self) -> bool: return "new" not in self.get_current_url().lower()
+    def click_safe_button(self):
+        self.safe_button.click()
+
+    def is_contract_saved(self) -> bool:
+        return "new" not in self.get_current_url().lower()
+
+    # === Закрыть ===
+    def click_close_button(self):
+        self.close_button.click()
 
     # === Вспомогательные ===
     def _get_dropdown_options(self, exclude: list = None) -> list:

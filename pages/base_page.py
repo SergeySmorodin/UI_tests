@@ -1,5 +1,3 @@
-import datetime
-
 from playwright.sync_api import Page, expect, Locator
 
 from config import VPNConfig
@@ -103,8 +101,3 @@ class BasePage:
         self.page.wait_for_timeout(milliseconds)
 
     # === Вспомогательные методы ===
-
-
-
-
-
