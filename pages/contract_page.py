@@ -31,6 +31,17 @@ class TdoPage(BasePage):
         self.wait_for_element(self.title)
         self.wait_for_timeout(1000)
 
+    def fill_form(self, contract, test_pdf_file: str):
+        """Заполнить все поля формы"""
+        self.fill_contract_number(contract.contract_number)
+        self.fill_contract_date(contract.contract_date)
+        self.fill_contract_sum(contract.amount)
+        self.select_random_status()
+        self.select_random_company()
+        self.select_random_manager()
+        self.select_random_work_type()
+        self.upload_file(test_pdf_file)
+
     # === Текстовые поля ===
     def fill_contract_number(self, number: str):
         self.contract_input.fill(number)
