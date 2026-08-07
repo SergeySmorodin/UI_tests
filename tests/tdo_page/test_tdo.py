@@ -5,6 +5,12 @@ from factories.contract_factory import ContractFactory
 from pages.login_page import LoginPage
 from pages.tdo_page import TdoPage
 
+""" TODO:
+1) Проверить кнопку Закрыть 
+2) Кнопку удалить у менеджера и вида работ 
+3) Дату договора выбрать с помощью календаря
+"""
+
 
 @pytest.mark.usefixtures("vpn_connection")
 class TestTDO:
@@ -43,5 +49,4 @@ class TestTDO:
         self.tdo_page.wait_for_navigation()
         self.tdo_page.wait_for_timeout(2000)
 
-        assert self.tdo_page.is_contract_saved()
-        print(f"✓ Договор {contract.contract_number} создан")
+        assert self.tdo_page.is_contract_saved(), f"Не удалось сохранить договор {contract.contract_number}"

@@ -54,14 +54,13 @@ class TdoPage(BasePage):
     def select_company(self, company: str):
         """Выбрать компанию (список должен быть уже открыт)"""
         self.page.locator('button[type="button"]').filter(has_text=company).first.click()
-        print(f"✓ Компания: {company}")
 
     def select_random_company(self):
         self.open_company_dropdown()
         companies = self._get_dropdown_options(exclude=['Выберите компанию'])
         if companies:
             self.select_company(random.choice(companies))
-        self.close_dropdown()
+        self.close_dropdown() # fixme
 
     # === Менеджер ===
     def open_manager_dropdown(self):
@@ -69,11 +68,6 @@ class TdoPage(BasePage):
         self.page.locator('button[title="Добавить менеджера"]').click()
         self.wait_for_timeout(500)
 
-    # def select_manager(self, manager: str):
-    #     """Выбрать менеджера из выпадающего списка"""
-    #     option = self.page.locator(f'li:has-text("{manager}"), [role="option"]:has-text("{manager}")').first
-    #     if option.is_visible():
-    #         option.click()
 
     def select_random_manager(self):
         """Добавить случайного менеджера"""
@@ -93,11 +87,6 @@ class TdoPage(BasePage):
         self.page.locator('button[title="Добавить вид работ"]').click()
         self.wait_for_timeout(500)
 
-    # def select_work_type(self, work_type: str):
-    #     """Выбрать вид работ"""
-    #     option = self.page.locator(f'li:has-text("{work_type}"), [role="option"]:has-text("{work_type}")').first
-    #     if option.is_visible():
-    #         option.click()
 
     def select_random_work_type(self):
         """Добавить случайный вид работ"""
