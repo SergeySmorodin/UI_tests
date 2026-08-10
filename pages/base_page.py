@@ -50,6 +50,13 @@ class BasePage:
         except:
             return False
 
+    def is_element_enabled(self, locator: Locator) -> bool:
+        """Проверить, активен ли элемент"""
+        try:
+            return locator.is_enabled()
+        except:
+            return False
+
     def click(self, locator: Locator):
         """Кликнуть по элементу"""
         expect(locator).to_be_visible(timeout=self.timeout)
@@ -66,6 +73,12 @@ class BasePage:
         """Получить текст элемента"""
         if self.is_element_visible(locator):
             return locator.text_content()
+        return ""
+
+    def get_input_value(self, locator: Locator) -> str:
+        """Получить значение поля ввода"""
+        if self.is_element_visible(locator):
+            return locator.input_value()
         return ""
 
     # === Файл ===
@@ -135,6 +148,35 @@ class BasePage:
         self.page.keyboard.press("Escape")
         self.wait_for_timeout(300)
 
+    # === Сообщения об ошибках ===
+
+    def is_error_message_visible(self, timeout: int = 3000) -> bool:
+        """Проверить наличие сообщения об ошибке"""
+        error_locator = self.page.locator('.error, .alert, [role="alert"], .invalid-feedback, .text-danger').first
+        try:
+            self.wait_for_element(error_locator, timeout=timeout)
+            return True
+        except:
+            return False
+
+    def get_error_message_text(self) -> str:
+        """Получить текст сообщения об ошибке"""
+        error_locator = self.page.locator('.error, .alert, [role="alert"], .invalid-feedback, .text-danger').first
+        if self.is_element_visible(error_locator):
+            return error_locator.text_content().strip()
+        return ""
+
+    def wait_for_error_message(self, timeout: int = None):
+        """Дождаться появления сообщения об ошибке"""
+        timeout = timeout or self.timeout
+        error_locator = self.page.locator('.error, .alert, [role="alert"], .invalid-feedback, .text-danger').first
+        self.wait_for_element(error_locator, timeout=timeout)
+
+    def expect_error_message_visible(self):
+        """Проверить, что сообщение об ошибке отображается"""
+        error_locator = self.page.locator('.error, .alert, [role="alert"], .invalid-feedback, .text-danger').first
+        self.expect_element_visible(error_locator)
+
     # === Проверки (assertions) ===
 
     def expect_element_visible(self, locator: Locator):
@@ -145,6 +187,10 @@ class BasePage:
         """Проверить, что элемент не видим"""
         expect(locator).not_to_be_visible(timeout=self.timeout)
 
+    def expect_element_enabled(self, locator: Locator):
+        """Проверить, что элемент активен"""
+        expect(locator).to_be_enabled(timeout=self.timeout)
+
     def expect_url_contains(self, text: str):
         """Проверить, что URL содержит текст"""
         expect(self.page).to_have_url(f"**{text}**", timeout=self.timeout)
@@ -152,6 +198,10 @@ class BasePage:
     def expect_url_not_contains(self, text: str):
         """Проверить, что URL НЕ содержит текст"""
         expect(self.page).not_to_have_url(f"**{text}**", timeout=self.timeout)
+
+    def expect_text_on_page(self, text: str):
+        """Проверить, что текст присутствует на странице"""
+        expect(self.page.get_by_text(text).first).to_be_visible(timeout=self.timeout)
 
     # === Отладка ===
 
