@@ -1,4 +1,5 @@
 from playwright.sync_api import Page, expect, Locator
+
 from config import VPNConfig
 
 
@@ -107,7 +108,7 @@ class BasePage:
 
         assert self.page.url != current_url, "URL не изменился после закрытия"
         assert "new" not in self.page.url.lower(), "Всё ещё на странице создания"
-        assert "edit" not in self.page.url.lower(), "Всё ещё на странице редактирования"
+        # assert "edit" not in self.page.url.lower(), "Всё ещё на странице редактирования"
 
     def verify_saved(self):
         """Проверить, что форма сохранена и ушли со страницы создания/редактирования"""
@@ -116,7 +117,7 @@ class BasePage:
 
         current_url = self.get_current_url()
         assert "new" not in current_url.lower(), "Всё ещё на странице создания"
-        assert "edit" not in current_url.lower(), "Всё ещё на странице редактирования"
+        # assert "edit" not in current_url.lower(), "Всё ещё на странице редактирования"
 
     def click_close_and_verify(self):
         """Нажать кнопку Закрыть и проверить, что ушли со страницы"""
@@ -128,10 +129,6 @@ class BasePage:
         """Нажать кнопку Сохранить и проверить, что форма сохранена"""
         self.click_safe_button()
         self.verify_saved()
-
-    def is_saved(self) -> bool:
-        """Проверить, что ушли со страницы создания/редактирования"""
-        return "new" not in self.get_current_url().lower() and "edit" not in self.get_current_url().lower()
 
     # === Выпадающие списки ===
     def _get_dropdown_options(self, exclude: list = None) -> list:

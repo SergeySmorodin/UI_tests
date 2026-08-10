@@ -8,58 +8,49 @@ from pages.login_page import LoginPage
 
 
 @pytest.mark.usefixtures("vpn_connection")
-class TestTdo:
+class TestContract:
 
     @pytest.fixture(autouse=True)
     def setup(self, page: Page, test_config):
-        """Вход и открытие страницы"""
+        """Вход в систему"""
         login_page = LoginPage(page)
         login_page.login(test_config)
         assert login_page.is_login_successful(), "Не удалось войти"
 
         self.tdo_page = TdoPage(page)
         self.tdo_page.open(test_config)
+        self.config = test_config
 
     def test_close_button(self):
         """Тест кнопки закрытия формы"""
+
         self.tdo_page.click_close_and_verify()
 
-    def test_delete_manager(self, page: Page):
+    def test_delete_manager(self):
         """Тест кнопки удаления менеджера"""
-        # Добавляем менеджера
+
         self.tdo_page.select_random_manager()
-
-        # Удаляем
         self.tdo_page.delete_manager()
-
-        # Проверяем, что менеджер удалён (кнопка удаления исчезла)
         assert not self.tdo_page.is_manager_present(), "Менеджер не удалён"
 
-    def test_delete_work_type(self, page: Page):
+    def test_delete_work_type(self):
         """Тест кнопки удаления вида работ"""
-        # Добавляем вид работ
+
         self.tdo_page.select_random_work_type()
-
-        # Удаляем
         self.tdo_page.delete_work_type()
-
-        # Проверяем, что вид работ удалён
         assert not self.tdo_page.is_work_type_present(), "Вид работ не удалён"
 
-    def test_create_and_find_contract(self, page: Page, test_config, test_pdf_file):
+    def test_create_and_find_contract(self, page: Page, test_pdf_file):
         """Создать договор и найти его в списке"""
 
         contract = ContractFactory()
 
         self.tdo_page.fill_form(contract, test_pdf_file)
-        self.tdo_page.click_safe_button()
-        self.tdo_page.wait_for_navigation()
-        self.tdo_page.wait_for_timeout(2000)
+        self.tdo_page.click_save_and_verify()
 
-        assert self.tdo_page.is_saved(), f"Не удалось сохранить {contract.contract_number}"
-
+        # Поиск на странице контрактов
         contracts_page = ContractsPage(page)
-        contracts_page.open(test_config)
+        contracts_page.open(self.config)
         contracts_page.search_contract(contract.contract_number)
 
         assert contracts_page.is_contract_found(contract.contract_number), \

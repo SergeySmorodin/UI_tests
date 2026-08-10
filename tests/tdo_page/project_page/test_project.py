@@ -4,6 +4,7 @@ from playwright.sync_api import Page
 from factories.project_factory import ProjectFactory
 from pages.login_page import LoginPage
 from pages.project_page import ProjectPage
+from pages.projects_page import ProjectsPage
 
 
 @pytest.mark.usefixtures("vpn_connection")
@@ -66,3 +67,55 @@ class TestProject:
         assert self.project_page.get_start_date_value() == self.project_data.start_date, "Дата начала не совпадает"
         assert self.project_page.get_stop_date_value() == self.project_data.stop_date, "Дата окончания не совпадает"
         assert self.project_page.get_note_value() == self.project_data.note, "Примечание не совпадает"
+
+    def test_create_and_find_project(self, page: Page, test_config):
+        """Тест сохранения со всеми заполненными полями"""
+        self.project_page.fill_form(self.project_data)
+        self.project_page.click_save_and_verify()
+
+        projects_page = ProjectsPage(page)
+        projects_page.open(test_config)
+        projects_page.search_project(self.project_data.code)
+
+        assert projects_page.is_project_found(self.project_data.code), \
+            f"Проект {self.project_data.code} не найден в списке"
+
+    # === Тесты валидации ===
+
+    def test_dates_validation(self):
+        """Тест валидации дат (дата окончания раньше даты начала)"""
+
+        self.project_page.fill_form(self.project_data)
+        self.project_page.fill_start_date("31.12.2024")
+        self.project_page.fill_stop_date("01.01.2024")
+        self.project_page.click_safe_button()
+
+        # Даём время на появление ошибки
+        self.project_page.wait_for_timeout(500)
+
+        # Проверяем появление ошибки с ожиданием
+        assert self.project_page.is_error_message_visible(timeout=3000), \
+            "Нет сообщения об ошибке валидации дат"
+
+        # Проверяем текст ошибки
+        error_text = self.project_page.get_error_message_text()
+        assert error_text, "Текст ошибки пустой"
+
+        # Проверяем что остались на странице
+        assert not self.project_page.is_saved(), \
+            "Форма сохранилась с некорректными датами"
+
+    def test_empty_code_validation(self):
+        """Тест валидации пустого обязательного поля Код"""
+        # Заполняем поля кроме кода
+        self.project_page.fill_code_project(self.project_data.code_project)
+        self.project_page.fill_organisation(self.project_data.organisation)
+        self.project_page.fill_start_date(self.project_data.start_date)
+
+        # Пытаемся сохранить
+        self.project_page.click_safe_button()
+        self.project_page.wait_for_timeout(1000)
+
+        # Проверяем что остались на странице создания
+        assert "new" in self.project_page.get_current_url().lower(), \
+            "Форма сохранилась без обязательного поля Код"
