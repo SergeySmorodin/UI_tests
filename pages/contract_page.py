@@ -1,5 +1,7 @@
 import random
+
 from playwright.sync_api import Page
+
 from config import VPNConfig
 from pages.base_page import BasePage
 from pages.locators.tdo_locators import TdoLocators
@@ -27,9 +29,8 @@ class TdoPage(BasePage):
         self.file_upload = self.page.locator(self.loc.FILE_UPLOAD)
 
     def open(self, config: VPNConfig):
-        self.open_relative(config, PAGE)
-        self.wait_for_element(self.title)
-        self.wait_for_timeout(1000)
+        """Открыть страницу создания договора"""
+        super().open(config, PAGE, self.title)
 
     def fill_form(self, contract, test_pdf_file: str):
         """Заполнить все поля формы"""

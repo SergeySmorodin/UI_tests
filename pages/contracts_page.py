@@ -1,16 +1,9 @@
-import random
-
 from playwright.sync_api import Page
 
 from config import VPNConfig
 from pages.base_page import BasePage
 
 PAGE = "TDO/Contracts"
-
-
-from playwright.sync_api import Page
-from config import VPNConfig
-from pages.base_page import BasePage
 
 
 class ContractsPage(BasePage):
@@ -23,8 +16,8 @@ class ContractsPage(BasePage):
         self.first_row = self.table_rows.first
 
     def open(self, config: VPNConfig):
-        self.open_relative(config, PAGE)
-        self.wait_for_timeout(1000)
+        """Открыть страницу создания проекта"""
+        super().open(config, PAGE, self.search_input)
 
     def search_contract(self, contract_number: str):
         """Найти договор по номеру"""

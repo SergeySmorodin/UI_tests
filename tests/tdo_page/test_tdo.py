@@ -20,17 +20,9 @@ class TestTdo:
         self.tdo_page = TdoPage(page)
         self.tdo_page.open(test_config)
 
-    def test_close_button(self, page: Page):
+    def test_close_button(self):
         """Тест кнопки закрытия формы"""
-        current_url = page.url
-
-        self.tdo_page.click_close_button()
-        self.tdo_page.wait_for_navigation()
-        self.tdo_page.wait_for_timeout(1000)
-
-        # Проверяем, что ушли со страницы создания
-        assert page.url != current_url, "URL не изменился после закрытия"
-        assert "new" not in page.url.lower(), "Всё ещё на странице создания"
+        self.tdo_page.click_close_and_verify()
 
     def test_delete_manager(self, page: Page):
         """Тест кнопки удаления менеджера"""

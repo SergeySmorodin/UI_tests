@@ -1,5 +1,4 @@
 from playwright.sync_api import Page, expect, Locator
-
 from config import VPNConfig
 
 
@@ -21,6 +20,13 @@ class BasePage:
         """Открыть страницу с относительным путём"""
         url = f"{config.site_url}{path}"
         self.open_url(url)
+
+    def open(self, config: VPNConfig, page_path: str, title_locator: Locator = None):
+        """Открыть страницу и дождаться загрузки"""
+        self.open_relative(config, page_path)
+        if title_locator:
+            self.wait_for_element(title_locator)
+        self.wait_for_timeout(1000)
 
     def get_current_url(self) -> str:
         """Получить текущий URL"""
@@ -76,7 +82,40 @@ class BasePage:
         """Нажать кнопку Закрыть. Дочерний класс должен определить self.close_button"""
         self.click(self.close_button)
 
-    # === Проверки ===
+    # === Проверки закрытия/сохранения ===
+
+    def verify_closed(self, current_url: str = None):
+        """Проверить, что страница создания/редактирования закрылась"""
+        if current_url is None:
+            current_url = self.get_current_url()
+
+        self.wait_for_navigation()
+        self.wait_for_timeout(1000)
+
+        assert self.page.url != current_url, "URL не изменился после закрытия"
+        assert "new" not in self.page.url.lower(), "Всё ещё на странице создания"
+        assert "edit" not in self.page.url.lower(), "Всё ещё на странице редактирования"
+
+    def verify_saved(self):
+        """Проверить, что форма сохранена и ушли со страницы создания/редактирования"""
+        self.wait_for_navigation()
+        self.wait_for_timeout(1000)
+
+        current_url = self.get_current_url()
+        assert "new" not in current_url.lower(), "Всё ещё на странице создания"
+        assert "edit" not in current_url.lower(), "Всё ещё на странице редактирования"
+
+    def click_close_and_verify(self):
+        """Нажать кнопку Закрыть и проверить, что ушли со страницы"""
+        current_url = self.get_current_url()
+        self.click_close_button()
+        self.verify_closed(current_url)
+
+    def click_save_and_verify(self):
+        """Нажать кнопку Сохранить и проверить, что форма сохранена"""
+        self.click_safe_button()
+        self.verify_saved()
+
     def is_saved(self) -> bool:
         """Проверить, что ушли со страницы создания/редактирования"""
         return "new" not in self.get_current_url().lower() and "edit" not in self.get_current_url().lower()
@@ -101,6 +140,10 @@ class BasePage:
     def expect_element_visible(self, locator: Locator):
         """Проверить, что элемент видим"""
         expect(locator).to_be_visible(timeout=self.timeout)
+
+    def expect_element_not_visible(self, locator: Locator):
+        """Проверить, что элемент не видим"""
+        expect(locator).not_to_be_visible(timeout=self.timeout)
 
     def expect_url_contains(self, text: str):
         """Проверить, что URL содержит текст"""
@@ -133,5 +176,3 @@ class BasePage:
     def wait_for_timeout(self, milliseconds: int = 1000):
         """Пауза в миллисекундах"""
         self.page.wait_for_timeout(milliseconds)
-
-    # === Вспомогательные методы ===

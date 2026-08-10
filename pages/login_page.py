@@ -3,6 +3,8 @@ from playwright.sync_api import Page
 from config import VPNConfig
 from pages.base_page import BasePage
 
+PAGE = "login"
+
 
 class LoginPage(BasePage):
     """Страница авторизации"""
@@ -20,8 +22,7 @@ class LoginPage(BasePage):
 
     def open(self, config: VPNConfig):
         """Открыть страницу логина"""
-        self.open_relative(config, "login")
-        self.wait_for_element(self.username_input)
+        super().open(config, PAGE, self.username_input)
 
     def check_login_form_visible(self):
         """Проверить, что форма логина отображается"""
