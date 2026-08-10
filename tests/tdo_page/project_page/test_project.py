@@ -68,18 +68,25 @@ class TestProject:
         assert self.project_page.get_stop_date_value() == self.project_data.stop_date, "Дата окончания не совпадает"
         assert self.project_page.get_note_value() == self.project_data.note, "Примечание не совпадает"
 
-    def test_create_and_find_project(self, page: Page, test_config):
+    def test_create_and_find_project(self, page: Page):
         """Тест сохранения со всеми заполненными полями"""
         self.project_page.fill_form(self.project_data)
         self.project_page.click_save_and_verify()
 
         projects_page = ProjectsPage(page)
 
-        projects_page.open(test_config, ProjectsPage.PAGE, projects_page.search_input)
+        projects_page.open(self.project_page.config, ProjectsPage.PAGE, projects_page.search_input)
         projects_page.search(self.project_data.code)
 
         assert projects_page.is_row_found(self.project_data.code), \
             f"Проект {self.project_data.code} не найден в списке"
+
+        # Открываем проект
+        projects_page.open_row(self.project_data.code)
+
+        # Проверяем, что открылась страница договора
+        assert "edit" in page.url.lower() or "view" in page.url.lower(), \
+            f"Договор не открылся. URL: {page.url}"
 
     # === Тесты валидации ===
 

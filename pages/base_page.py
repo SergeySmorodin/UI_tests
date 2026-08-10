@@ -24,6 +24,7 @@ class BasePage:
 
     def open(self, config: VPNConfig, page_path: str, title_locator: Locator = None):
         """Открыть страницу и дождаться загрузки"""
+        self.config = config
         self.open_relative(config, page_path)
         if title_locator:
             self.wait_for_element(title_locator)
@@ -213,8 +214,14 @@ class BasePage:
         return self.page.locator(f"td:has-text('{text}')").is_visible()
 
     def open_row(self, text: str):
-        """Открыть строку кликом"""
-        self.page.locator(f"td:has-text('{text}')").click()
+        """Открыть строку кликом по ссылке внутри td"""
+        row = self.page.locator(f"td:has-text('{text}')").first
+        # Ищем ссылку внутри td
+        link = row.locator("a").first
+        if link.count() > 0:
+            link.click()
+        else:
+            row.click()
         self.wait_for_navigation()
 
     # === Отладка ===
