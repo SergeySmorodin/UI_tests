@@ -1,9 +1,8 @@
 import random
-
 from playwright.sync_api import Page
-
 from config import VPNConfig
 from pages.base_page import BasePage
+from pages.locators.tdo_locators import TdoLocators
 
 PAGE = "TDO/Contract/new"
 
@@ -13,18 +12,19 @@ class TdoPage(BasePage):
 
     def __init__(self, page: Page):
         super().__init__(page)
+        self.loc = TdoLocators()
         self._init_locators()
 
     def _init_locators(self):
         self.contract_input = self.page.get_by_placeholder("Введите номер договора")
-        self.date_input = self.page.locator("#contract_date")
+        self.date_input = self.page.locator(self.loc.DATE_INPUT)
         self.sum_input = self.page.get_by_placeholder("Введите сумму")
-        self.status_select = self.page.locator("select, combobox").first
+        self.status_select = self.page.locator(self.loc.STATUS_SELECT).first
         self.company_button = self.page.get_by_role("button", name="Выберите компанию")
         self.safe_button = self.page.get_by_role("button", name="Сохранить")
         self.close_button = self.page.get_by_role("button", name="Закрыть")
         self.title = self.page.get_by_text("Создание договора")
-        self.file_upload = self.page.locator("input[type='file']")
+        self.file_upload = self.page.locator(self.loc.FILE_UPLOAD)
 
     def open(self, config: VPNConfig):
         self.open_relative(config, PAGE)
@@ -72,97 +72,64 @@ class TdoPage(BasePage):
 
     def select_company(self, company: str):
         """Выбрать компанию (список должен быть уже открыт)"""
-        self.page.locator('button[type="button"]').filter(has_text=company).first.click()
+        selector, filter_kwargs = self.loc.company_by_name(company)
+        self.page.locator(selector).filter(**filter_kwargs).first.click()
 
     def select_random_company(self):
         self.open_company_dropdown()
         companies = self._get_dropdown_options(exclude=['Выберите компанию'])
         if companies:
             self.select_company(random.choice(companies))
-        self.close_dropdown()  # fixme
+        self.close_dropdown()
 
     # === Менеджер ===
     def open_manager_dropdown(self):
         """Нажать + для добавления менеджера"""
-        self.page.locator('button[title="Добавить менеджера"]').click()
+        self.page.locator(self.loc.ADD_MANAGER_BUTTON).click()
         self.wait_for_timeout(500)
 
     def select_random_manager(self):
         """Добавить случайного менеджера"""
         self.open_manager_dropdown()
-        # Кликаем по появившейся строке, чтобы открыть список
-        manager_row = self.page.locator("text=Менеджеры").locator("..").locator("input, [role='combobox']")
+        manager_row = self.page.locator(self.loc.section_input("Менеджеры"))
         if manager_row.count() > 0:
             manager_row.click()
             self.wait_for_timeout(500)
-            options = [o for o in self.page.locator('li, [role="option"]').all() if o.is_visible()]
+            options = [o for o in self.page.locator(self.loc.DROPDOWN_OPTIONS).all() if o.is_visible()]
             if options:
                 random.choice(options).click()
 
     def delete_manager(self):
         """Удалить добавленного менеджера"""
-        self.page.locator("xpath=//*[contains(text(), 'Менеджеры')]/following::button[@title='Удалить'][1]").click()
+        self.page.locator(self.loc.DELETE_MANAGER_BUTTON).click()
         self.wait_for_timeout(300)
-        print("✓ Менеджер удалён")
 
     def is_manager_present(self) -> bool:
         """Проверить, есть ли добавленный менеджер"""
-        return self.page.locator(
-            "xpath=//*[contains(text(), 'Менеджеры')]/following::button[@title='Удалить'][1]").is_visible()
+        return self.page.locator(self.loc.DELETE_MANAGER_BUTTON).is_visible()
 
     # === Виды работ ===
     def open_work_type_dropdown(self):
         """Нажать + для добавления вида работ"""
-        self.page.locator('button[title="Добавить вид работ"]').click()
+        self.page.locator(self.loc.ADD_WORK_TYPE_BUTTON).click()
         self.wait_for_timeout(500)
 
     def select_random_work_type(self):
         """Добавить случайный вид работ"""
         self.open_work_type_dropdown()
-        work_row = self.page.locator("text=Виды работ").locator("..").locator("input, [role='combobox']")
+        work_row = self.page.locator(self.loc.section_input("Виды работ"))
         if work_row.count() > 0:
             work_row.click()
             self.wait_for_timeout(500)
-            options = [o for o in self.page.locator('li, [role="option"]').all() if o.is_visible()]
+            options = [o for o in self.page.locator(self.loc.DROPDOWN_OPTIONS).all() if o.is_visible()]
             if options:
                 random.choice(options).click()
 
     def delete_work_type(self):
         """Удалить добавленный вид работ"""
-        self.page.locator("xpath=//*[contains(text(), 'Виды работ')]/following::button[@title='Удалить'][1]").click()
+        self.page.locator(self.loc.DELETE_WORK_TYPE_BUTTON).click()
         self.wait_for_timeout(300)
-        print("✓ Вид работ удалён")
 
     def is_work_type_present(self) -> bool:
         """Проверить, есть ли добавленный вид работ"""
-        return self.page.locator(
-            "xpath=//*[contains(text(), 'Виды работ')]/following::button[@title='Удалить'][1]").is_visible()
-
-    # === Файл ===
-    def upload_file(self, file_path: str):
-        self.file_upload.set_input_files(file_path)
-
-    # === Сохранение ===
-    def click_safe_button(self):
-        self.safe_button.click()
-
-    def is_contract_saved(self) -> bool:
-        return "new" not in self.get_current_url().lower()
-
-    # === Закрыть ===
-    def click_close_button(self):
-        self.close_button.click()
-
-    # === Вспомогательные ===
-    def _get_dropdown_options(self, exclude: list = None) -> list:
-        if exclude is None:
-            exclude = ['Закрыть', 'Сохранить']
-        self.wait_for_timeout(500)
-        return [b.text_content().strip()
-                for b in self.page.locator('button[type="button"]').all()
-                if b.is_visible() and b.text_content().strip() not in exclude]
-
-    def close_dropdown(self):
-        """Закрыть выпадающий список"""
-        self.page.keyboard.press("Escape")
-        self.wait_for_timeout(300)
+        return self.page.locator(self.loc.DELETE_WORK_TYPE_BUTTON).is_visible()

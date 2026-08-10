@@ -8,7 +8,7 @@ from pages.login_page import LoginPage
 
 
 @pytest.mark.usefixtures("vpn_connection")
-class TestTDO:
+class TestTdo:
 
     @pytest.fixture(autouse=True)
     def setup(self, page: Page, test_config):
@@ -64,7 +64,7 @@ class TestTDO:
         self.tdo_page.wait_for_navigation()
         self.tdo_page.wait_for_timeout(2000)
 
-        assert self.tdo_page.is_contract_saved(), f"Не удалось сохранить {contract.contract_number}"
+        assert self.tdo_page.is_saved(), f"Не удалось сохранить {contract.contract_number}"
 
         contracts_page = ContractsPage(page)
         contracts_page.open(test_config)

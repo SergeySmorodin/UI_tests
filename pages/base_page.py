@@ -62,6 +62,40 @@ class BasePage:
             return locator.text_content()
         return ""
 
+    # === Файл ===
+    def upload_file(self, file_path: str):
+        """Загрузить файл. Дочерний класс должен определить self.file_upload"""
+        self.file_upload.set_input_files(file_path)
+
+    # === Кнопки ===
+    def click_safe_button(self):
+        """Нажать кнопку Сохранить. Дочерний класс должен определить self.safe_button"""
+        self.click(self.safe_button)
+
+    def click_close_button(self):
+        """Нажать кнопку Закрыть. Дочерний класс должен определить self.close_button"""
+        self.click(self.close_button)
+
+    # === Проверки ===
+    def is_saved(self) -> bool:
+        """Проверить, что ушли со страницы создания/редактирования"""
+        return "new" not in self.get_current_url().lower() and "edit" not in self.get_current_url().lower()
+
+    # === Выпадающие списки ===
+    def _get_dropdown_options(self, exclude: list = None) -> list:
+        """Получить опции из выпадающего списка"""
+        if exclude is None:
+            exclude = ['Закрыть', 'Сохранить']
+        self.wait_for_timeout(500)
+        return [b.text_content().strip()
+                for b in self.page.locator('button[type="button"]').all()
+                if b.is_visible() and b.text_content().strip() not in exclude]
+
+    def close_dropdown(self):
+        """Закрыть выпадающий список"""
+        self.page.keyboard.press("Escape")
+        self.wait_for_timeout(300)
+
     # === Проверки (assertions) ===
 
     def expect_element_visible(self, locator: Locator):
