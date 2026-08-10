@@ -9,7 +9,7 @@ from pages.locators.tdo_locators import TdoLocators
 PAGE = "TDO/Contract/new"
 
 
-class TdoPage(BasePage):
+class ContractPage(BasePage):
     """Страница создания договора"""
 
     def __init__(self, page: Page):

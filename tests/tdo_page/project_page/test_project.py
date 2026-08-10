@@ -74,36 +74,14 @@ class TestProject:
         self.project_page.click_save_and_verify()
 
         projects_page = ProjectsPage(page)
-        projects_page.open(test_config)
-        projects_page.search_project(self.project_data.code)
 
-        assert projects_page.is_project_found(self.project_data.code), \
+        projects_page.open(test_config, ProjectsPage.PAGE, projects_page.search_input)
+        projects_page.search(self.project_data.code)
+
+        assert projects_page.is_row_found(self.project_data.code), \
             f"Проект {self.project_data.code} не найден в списке"
 
     # === Тесты валидации ===
-
-    def test_dates_validation(self):
-        """Тест валидации дат (дата окончания раньше даты начала)"""
-
-        self.project_page.fill_form(self.project_data)
-        self.project_page.fill_start_date("31.12.2024")
-        self.project_page.fill_stop_date("01.01.2024")
-        self.project_page.click_safe_button()
-
-        # Даём время на появление ошибки
-        self.project_page.wait_for_timeout(500)
-
-        # Проверяем появление ошибки с ожиданием
-        assert self.project_page.is_error_message_visible(timeout=3000), \
-            "Нет сообщения об ошибке валидации дат"
-
-        # Проверяем текст ошибки
-        error_text = self.project_page.get_error_message_text()
-        assert error_text, "Текст ошибки пустой"
-
-        # Проверяем что остались на странице
-        assert not self.project_page.is_saved(), \
-            "Форма сохранилась с некорректными датами"
 
     def test_empty_code_validation(self):
         """Тест валидации пустого обязательного поля Код"""

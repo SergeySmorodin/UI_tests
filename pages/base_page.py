@@ -200,6 +200,23 @@ class BasePage:
         """Проверить, что текст присутствует на странице"""
         expect(self.page.get_by_text(text).first).to_be_visible(timeout=self.timeout)
 
+    # === Работа с таблицами ===
+
+    def search(self, text: str):
+        """Поиск по таблице"""
+        self.search_input.fill(text)
+        self.page.keyboard.press("Enter")
+        self.wait_for_timeout(1000)
+
+    def is_row_found(self, text: str) -> bool:
+        """Проверить, что строка с текстом есть в таблице"""
+        return self.page.locator(f"td:has-text('{text}')").is_visible()
+
+    def open_row(self, text: str):
+        """Открыть строку кликом"""
+        self.page.locator(f"td:has-text('{text}')").click()
+        self.wait_for_navigation()
+
     # === Отладка ===
 
     def take_screenshot(self, name: str = "screenshot"):
