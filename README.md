@@ -16,12 +16,12 @@ pytest-xdist
 allure-pytest
 ```
 
-# Установка библиотек
-```bash
-poetry add pytest-playwright factory_boy pytest-cov pytest-xdist allure-pytest
 
-playwright install
-```
+# Установка библиотек
+```poetry add pytest-playwright factory_boy pytest-cov pytest-xdist allure-pytest```
+
+```playwright install```
+
 
 # Необходимо для работы тестов
 ### Файл .env в корне каталога
@@ -29,26 +29,20 @@ playwright install
 SITE_URL=http://example.ru/
 LOGIN=xxx
 PASSWORD=xxx
-BROWSER_HEADLESS=false
-DEFAULT_TIMEOUT=30000
+BROWSER_HEADLESS=true
+DEFAULT_TIMEOUT=1000
 ```
+
 
 # Команды для запуска тестов
 #### Запуск всех тестов
-* Команда для параллельного запуска всех тестов
-```pytest -n auto```
+* Команда для параллельного запуска всех тестов (тесты одного класса последовательно)
+```pytest -n auto --dist loadscope```
 * Подробный вывод с именами тестов и print-ами и открытием страниц в браузере
 ```pytest -v -s --headed```
 
+
 #### Запуск по маркерам
-* Запуск тестов по маркерам, используется опция -m <выражение_маркера>
-```pytest -m "api" -n auto```
-* Запустить тесты, НЕ имеющие маркера (добавить not к маркеру - исключить медленные тесты)
-```pytest -m "not slow" -n auto```
-* Только модульные тесты (изолированные, с моками)
-```pytest -m "units" -n auto```
-* Только тесты с Excel
-```pytest -m "excel" -n auto```
 * Показать только xfail тесты
 ```pytest -v -m xfail -n auto```
 * Показать только skipped тесты
@@ -60,14 +54,13 @@ DEFAULT_TIMEOUT=30000
 * Список доступных маркеров
 ```pytest --markers```
 
+
 ##### Запуск тестов по имени
 * Запуск тестов по маске имени
-```pytest -k "test_api_projects"```
-* ```pytest test_login.py::test_successful_login```
+```pytest -k "test_login"```
 
-#### Тесты вложенности сериализаторов (запускается только с флагом deep_serializer)
-* Генерацией отчета в serializer_reports
-```pytest -m deep_serializer -k test_serializers_fields```
+```pytest test_login.py::test_successful_login```
+
 
 #### Проверка покрытия кода тестами
 * Очистка отчетов + запуск тестов + покрытие кода
