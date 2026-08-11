@@ -84,8 +84,7 @@ class ProjectPage(BasePage):
         if project.note:
             self.fill_note(project.note)
 
-        # Выпадающие списки заполняем только если они не пустые
-        # иначе выбираем случайные значения
+        # Выпадающие списки
         self.select_random_status()
         self.select_random_group()
         self.select_random_department()
@@ -160,6 +159,54 @@ class ProjectPage(BasePage):
         """Получить выбранный статус"""
         return self.status_select.input_value()
 
-    def get_note_value(self):
+    def get_selected_group(self) -> str:
+        """Получить выбранную группу"""
+        return self.group_select.input_value()
+
+    def get_selected_department(self) -> str:
+        """Получить выбранное подразделение"""
+        return self.department_select.input_value()
+
+    def get_selected_type_project(self) -> str:
+        """Получить выбранный тип проекта"""
+        return self.type_project_select.input_value()
+
+    def get_selected_kind_project(self) -> str:
+        """Получить выбранный вид проекта"""
+        return self.kind_project_select.input_value()
+
+    def get_note_value(self) -> str:
         """Получить заполненное примечание"""
         return self.note_input.input_value()
+
+    # === Проверка значений ===
+
+    def verify_form_data(self, expected_data=None):
+        """
+        Проверяет значения формы.
+        """
+        field_getters = {
+            'Код': (self.get_code_value, 'code'),
+            'Код проекта': (self.get_code_project_value, 'code_project'),
+            'Организация': (self.get_organisation_value, 'organisation'),
+            'Дата начала': (self.get_start_date_value, 'start_date'),
+            'Дата окончания': (self.get_stop_date_value, 'stop_date'),
+            'Статус': (self.get_selected_status, 'status'),
+            'Группа': (self.get_selected_group, 'group'),
+            'Подразделение': (self.get_selected_department, 'department'),
+            'Тип проекта': (self.get_selected_type_project, 'type_project'),
+            'Вид проекта': (self.get_selected_kind_project, 'kind_project'),
+            'Примечание': (self.get_note_value, 'note')
+        }
+
+        for field_name, (getter, attr_name) in field_getters.items():
+            actual = getter()
+
+            if expected_data is None:
+                assert actual, f"{field_name} не заполнено"
+            else:
+                expected = getattr(expected_data, attr_name)  # эквивалентно ProjectData.code
+                # Если поле не обязательное и expected пустой - пропускаем
+                if not expected:
+                    continue
+                assert actual == expected, f"{field_name}: '{actual}' != '{expected}'"
