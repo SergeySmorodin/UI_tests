@@ -53,12 +53,13 @@ class ContractPage(BasePage):
     def fill_contract_sum(self, amount: str):
         self.sum_input.fill(str(amount))
 
-    # === Статус (select) ===
+    # === Статус ===
     def select_status(self, status: str):
         self.status_select.select_option(label=status)
 
     def get_status_options(self) -> list:
-        return [o.get_attribute("value") for o in self.status_select.locator('option').all()
+        return [o.get_attribute("value")
+                for o in self.status_select.locator('option').all()
                 if o.get_attribute("value")]
 
     def select_random_status(self):
@@ -66,7 +67,7 @@ class ContractPage(BasePage):
         if statuses:
             self.select_status(random.choice(statuses))
 
-    # === Компания (кнопка → выпадающий список с кнопками) ===
+    # === Компания ===
     def open_company_dropdown(self):
         self.company_button.click()
         self.wait_for_timeout(700)
@@ -78,27 +79,34 @@ class ContractPage(BasePage):
     def select_random_company(self):
         self.open_company_dropdown()
         options = self.page.locator(self.loc.COMPANY_OPTIONS).all()
-        visible_options = [opt for opt in options if opt.is_visible() and opt.text_content().strip()]
+        visible_options = [opt for opt in options
+                           if opt.is_visible()
+                           and opt.text_content().strip()
+                           and 'Выберите' not in opt.text_content()]
         if visible_options:
             random.choice(visible_options).click()
         self.close_dropdown()
 
-    # === Менеджер (кнопка → выпадающий список с кнопками) ===
+    # === Менеджер ===
     def select_random_manager(self):
         """Добавить случайного менеджера"""
+        # Нажимаем "+"
         self.page.locator(self.loc.ADD_MANAGER_BUTTON).click()
         self.wait_for_timeout(700)
 
-        manager_rows = self.page.locator(
-            'xpath=//h-8[contains(text(), "Менеджеры")]/../..//div[contains(@class, "flex items-center gap-2")]'
-        )
+        # Ищем строки менеджеров
+        manager_rows = self.page.locator(self.loc.MANAGER_ROW)
 
         if manager_rows.count() > 0:
+            # Берём последнюю строку (новую)
             last_row = manager_rows.last
+
+            # Кликаем по кнопке внутри строки
             dropdown_button = last_row.locator('button[type="button"]').first
             dropdown_button.click()
             self.wait_for_timeout(700)
 
+            # Получаем все видимые кнопки и фильтруем
             all_buttons = self.page.locator('button[type="button"]:visible').all()
 
             exclude = ['Сохранить', 'Закрыть', 'Выберите', 'Добавить', 'Удалить']
@@ -107,7 +115,7 @@ class ContractPage(BasePage):
                        if len(b.text_content().strip()) > 5
                        and not any(e in b.text_content() for e in exclude)]
 
-            # Пропускаем первую опцию — она всегда дублирует кнопку в строке
+            # Пропускаем первую опцию (она уже в строке менеджера)
             options = options[1:]
 
             if options:
@@ -117,30 +125,43 @@ class ContractPage(BasePage):
 
     def delete_manager(self):
         """Удалить добавленного менеджера"""
-        self.page.locator(self.loc.DELETE_MANAGER_BUTTON).click()
-        self.wait_for_timeout(300)
+        # Находим кнопку удаления в последней строке менеджера
+        manager_rows = self.page.locator(self.loc.MANAGER_ROW)
+        if manager_rows.count() > 0:
+            last_row = manager_rows.last
+            delete_button = last_row.locator(self.loc.DELETE_MANAGER_BUTTON)
+            delete_button.click()
+            self.wait_for_timeout(300)
 
     def is_manager_present(self) -> bool:
         """Проверить, есть ли добавленный менеджер"""
-        return self.page.locator(self.loc.DELETE_MANAGER_BUTTON).is_visible()
+        manager_rows = self.page.locator(self.loc.MANAGER_ROW)
+        if manager_rows.count() > 0:
+            return manager_rows.last.locator(self.loc.DELETE_MANAGER_BUTTON).is_visible()
+        return False
 
-    # === Виды работ (это SELECT!) ===
+    # === Виды работ ===
     def select_random_work_type(self):
         """Добавить случайный вид работ"""
         # Нажимаем "+"
         self.page.locator(self.loc.ADD_WORK_TYPE_BUTTON).click()
         self.wait_for_timeout(700)
 
-        # Ищем select виды работ (последний — новый)
-        work_selects = self.page.locator(self.loc.WORK_TYPE_SELECT)
-        if work_selects.count() > 0:
-            # Берём ПОСЛЕДНИЙ select
-            select = work_selects.last
+        # Ищем строки видов работ
+        work_type_rows = self.page.locator(self.loc.WORK_TYPE_ROW)
+
+        if work_type_rows.count() > 0:
+            # Берём последнюю строку (новую)
+            last_row = work_type_rows.last
+
+            # Находим select внутри строки
+            select = last_row.locator('select')
 
             # Получаем все option
             options = select.locator('option').all()
-            values = [opt.get_attribute("value") for opt in options
-                      if opt.get_attribute("value") and opt.get_attribute("value") != "Выберите"]
+            values = [opt.get_attribute("value")
+                      for opt in options
+                      if opt.get_attribute("value")]
 
             if values:
                 random_value = random.choice(values)
@@ -149,9 +170,16 @@ class ContractPage(BasePage):
 
     def delete_work_type(self):
         """Удалить добавленный вид работ"""
-        self.page.locator(self.loc.DELETE_WORK_TYPE_BUTTON).click()
-        self.wait_for_timeout(300)
+        work_type_rows = self.page.locator(self.loc.WORK_TYPE_ROW)
+        if work_type_rows.count() > 0:
+            last_row = work_type_rows.last
+            delete_button = last_row.locator(self.loc.DELETE_WORK_TYPE_BUTTON)
+            delete_button.click()
+            self.wait_for_timeout(300)
 
     def is_work_type_present(self) -> bool:
         """Проверить, есть ли добавленный вид работ"""
-        return self.page.locator(self.loc.DELETE_WORK_TYPE_BUTTON).is_visible()
+        work_type_rows = self.page.locator(self.loc.WORK_TYPE_ROW)
+        if work_type_rows.count() > 0:
+            return work_type_rows.last.locator(self.loc.DELETE_WORK_TYPE_BUTTON).is_visible()
+        return False
