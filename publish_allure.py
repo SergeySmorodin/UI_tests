@@ -90,13 +90,117 @@ class AllurePublisher:
             reverse=True
         )[:20]
 
-        html = "<html><body><h1>Allure Reports</h1><ul>"
-        for build in builds:
-            with open(build / "meta.json", "r", encoding="utf-8") as f:
-                meta = json.load(f)
-            timestamp = datetime.fromisoformat(meta["timestamp"]).strftime("%d.%m.%Y %H:%M:%S")
-            html += f'<li><a href="{build.name}/index.html">{meta["build_number"]}</a> — {timestamp}</li>'
-        html += "</ul></body></html>"
+        html = """<!DOCTYPE html>
+<html>
+<head>
+    <title>Allure Reports History</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        h1 { color: #1a1a2e; font-size: 2.5em; }
+        .run {
+            padding: 20px;
+            margin: 15px 0;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        .run:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        .run-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .run a {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2em;
+        }
+        .run a:hover { text-decoration: underline; }
+        .timestamp { color: #666; font-size: 0.9em; }
+        .stats { display: flex; gap: 15px; flex-wrap: wrap; }
+        .stat {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .passed { background: #dcfce7; color: #166534; }
+        .failed { background: #fee2e2; color: #991b1b; }
+        .broken { background: #fef3c7; color: #92400e; }
+        .skipped { background: #f1f5f9; color: #475569; }
+        .no-reports {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Allure Test Reports</h1>
+        </div>
+"""
+
+        if builds:
+            for build in builds:
+                with open(build / "meta.json", "r", encoding="utf-8") as f:
+                    meta = json.load(f)
+
+                timestamp = datetime.fromisoformat(meta["timestamp"]).strftime("%d.%m.%Y %H:%M:%S")
+
+                stats_html = ""
+                for status, emoji in [("passed", "✅"), ("failed", "❌"),
+                                      ("broken", "💥"), ("skipped", "⏭️")]:
+                    count = meta.get(status, 0)
+                    if count > 0:
+                        stats_html += f'<span class="stat {status}">{emoji} {count}</span>'
+
+                html += f"""
+            <div class="run">
+                <div class="run-header">
+                    <a href="{build.name}/index.html">📈 Build {meta['build_number']}</a>
+                    <span class="timestamp">🕐 {timestamp}</span>
+                </div>
+                <div class="stats">{stats_html}</div>
+            </div>"""
+        else:
+            html += '<div class="no-reports">📭 No test reports yet</div>'
+
+        html += """
+    </div>
+</body>
+</html>"""
 
         with open(self.history_dir / "index.html", "w", encoding="utf-8") as f:
             f.write(html)
@@ -160,7 +264,7 @@ if __name__ == "__main__":
     parser.add_argument("--skip-tests", action="store_true")
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--no-publish", action="store_true")
-    parser.add_argument("--repo-url", default="https://github.com/SergeySmorodin/UI_tests.git")
+    parser.add_argument("--repo-url", default="https://sergeysmorodin.github.io/UI_tests/")
     args = parser.parse_args()
 
     publisher = AllurePublisher(repo_url=args.repo_url)
