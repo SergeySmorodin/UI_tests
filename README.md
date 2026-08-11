@@ -69,7 +69,19 @@ DEFAULT_TIMEOUT=3000
 
 #### Генерация отчетов Allure
 * Формирование папки с отчетами + запуск сервера allure
-```pytest -n auto --alluredir=./allure-results;allure serve ./allure-results```
+```pytest -n auto --dist loadscope --alluredir=./allure-results;allure serve ./allure-results```
+
+# Запуск тестов с сохранением результатов
+```pytest --alluredir=./allure-results```
+
+# Или с дополнительными опциями
+```pytest --alluredir=./allure-results -v --clean-alluredir```
+
+# Просмотр отчета
+```allure serve ./allure-results```
+
+# Генерация статического отчета
+```allure generate ./allure-results -o ./allure-report --clean```
 
 
 #### Полезные команды playwright

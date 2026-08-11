@@ -3,6 +3,7 @@ import re
 import subprocess
 import uuid
 
+import allure
 import pytest
 from playwright.sync_api import sync_playwright
 
@@ -89,3 +90,48 @@ def page(context):
     page = context.new_page()
     yield page
     page.close()
+
+
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Хук для создания скриншота при падении теста"""
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when == "call" and report.failed:
+        # Получаем page из фикстуры, если она есть
+        page = item.funcargs.get('page')
+        if page:
+            screenshot = page.screenshot(full_page=True)
+            allure.attach(
+                screenshot,
+                name="Скриншот при падении теста",
+                attachment_type=allure.attachment_type.PNG
+            )
+
+# @pytest.fixture(autouse=True)
+# def allure_environment(page):
+#     """Добавление информации об окружении"""
+#     if page:
+#         yield
+#         # Можно добавить информацию о браузере
+#         browser_info = page.evaluate("() => navigator.userAgent")
+#         allure.attach(
+#             browser_info,
+#             name="Browser Info",
+#             attachment_type=allure.attachment_type.TEXT
+#         )
+#
+#
+# def pytest_configure(config):
+#     """Добавление информации об окружении в отчет"""
+#     import os
+#     import sys
+#
+#     # Создаем файл environment.properties для Allure
+#     allure_dir = config.getoption('--alluredir', default='allure-results')
+#     os.makedirs(allure_dir, exist_ok=True)
+#
+#     with open(f"{allure_dir}/environment.properties", "w") as f:
+#         f.write(f"Python={sys.version}\n")
+#         f.write(f"Platform={sys.platform}\n")
