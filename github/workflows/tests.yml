@@ -17,11 +17,25 @@ jobs:
       with:
         python-version: '3.11'
 
+    - name: Install Poetry
+      run: |
+        curl -sSL https://install.python-poetry.org | python3 -
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install pytest allure-pytest playwright pytest-playwright
-        python -m playwright install chromium
+        poetry install
+        poetry run python -m playwright install chromium
+
+    - name: Create .env file
+      run: |
+        cat > .env << EOF
+        SITE_URL=${{ secrets.SITE_URL }}
+        LOGIN=${{ secrets.LOGIN }}
+        PASSWORD=${{ secrets.PASSWORD }}
+        BROWSER_HEADLESS=true
+        DEFAULT_TIMEOUT=30000
+        EOF
 
     - name: Restore Allure History
       uses: actions/cache@v4
@@ -38,11 +52,7 @@ jobs:
         fi
 
     - name: Run tests
-      env:
-        LOGIN: ${{ secrets.LOGIN }}
-        PASSWORD: ${{ secrets.PASSWORD }}
-        SITE_URL: ${{ secrets.SITE_URL }}
-      run: pytest --alluredir=allure-results
+      run: poetry run pytest --alluredir=allure-results -v
       continue-on-error: true
 
     - name: Generate Allure Report
