@@ -38,6 +38,10 @@ jobs:
         fi
 
     - name: Run tests
+      env:
+        LOGIN: ${{ secrets.LOGIN }}
+        PASSWORD: ${{ secrets.PASSWORD }}
+        SITE_URL: ${{ secrets.SITE_URL }}
       run: pytest --alluredir=allure-results
       continue-on-error: true
 
