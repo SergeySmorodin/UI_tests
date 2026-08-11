@@ -3,11 +3,11 @@ from playwright.sync_api import Page
 from config import VPNConfig
 from pages.base_page import BasePage
 
-PAGE = "login"
-
 
 class LoginPage(BasePage):
     """Страница авторизации"""
+
+    PAGE = "login"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -22,7 +22,7 @@ class LoginPage(BasePage):
 
     def open(self, config: VPNConfig):
         """Открыть страницу логина"""
-        super().open(config, PAGE, self.username_input)
+        super().open(config, self.PAGE, self.username_input)
 
     def check_login_form_visible(self):
         """Проверить, что форма логина отображается"""
@@ -30,21 +30,22 @@ class LoginPage(BasePage):
         self.expect_element_visible(self.password_input)
         self.expect_element_visible(self.login_button)
 
-    def fill_credentials(self, config: VPNConfig):
-        """Заполнить учетные данные"""
-        self.fill(self.username_input, config.login)
-        self.fill(self.password_input, config.password)
+    def fill_credentials(self, username: str, password: str):
+        """Заполнить учётные данные"""
+        self.fill(self.username_input, username)
+        self.fill(self.password_input, password)
 
     def click_login_button(self):
         """Нажать кнопку входа"""
         self.click(self.login_button)
 
     def login(self, config: VPNConfig):
-        """Полный процесс логина"""
+        """Выполнить вход с конфигом"""
         self.open(config)
         self.check_login_form_visible()
-        self.fill_credentials(config)
+        self.fill_credentials(config.login, config.password)
         self.click_login_button()
+        self.wait_for_navigation()
 
     def is_login_successful(self) -> bool:
         """Проверить успешность входа"""

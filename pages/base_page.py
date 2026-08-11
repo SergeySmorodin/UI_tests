@@ -1,5 +1,6 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, Locator
 
+from config import VPNConfig
 from mixins.assertions import AssertionsMixin
 from mixins.debug import DebugMixin
 from mixins.dropdown import DropdownMixin
@@ -20,9 +21,26 @@ class BasePage(
 ):
     """Базовый класс для всех страниц"""
 
+    PAGE: str = ""  # Должен быть переопределён в дочерних классах
+
     def __init__(self, page: Page):
         self.page = page
         self.timeout = 10000
+
+    @classmethod
+    def open_page(cls, page: Page, config: VPNConfig, title_locator: Locator = None):
+        """
+        Фабричный метод: создать экземпляр страницы и открыть её.
+
+        Использует open() из NavigationMixin.
+
+        Usage:
+            contracts_page = ContractsPage.open_page(page, test_config)
+            projects_page = ProjectsPage.open_page(page, test_config)
+        """
+        instance = cls(page)
+        instance.open(config, cls.PAGE, title_locator)  # open() из NavigationMixin
+        return instance
 
     # === Файл ===
     def upload_file(self, file_path: str):

@@ -3,15 +3,15 @@ import random
 from playwright.sync_api import Page
 
 from config import VPNConfig
+from factories.project_factory import ProjectData
 from pages.base_page import BasePage
 from pages.locators.project_locators import ProjectLocators
-from factories.project_factory import ProjectData
-
-PAGE = "TDO/Project/new"
 
 
 class ProjectPage(BasePage):
     """Страница создания проекта"""
+
+    PAGE = "TDO/Project/new"
 
     def __init__(self, page: Page):
         super().__init__(page)
@@ -36,7 +36,7 @@ class ProjectPage(BasePage):
 
     def open(self, config: VPNConfig):
         """Открыть страницу создания проекта"""
-        super().open(config, PAGE, self.title)
+        super().open(config, self.PAGE, self.title)
 
     # === Заполнение полей ===
 
@@ -91,7 +91,6 @@ class ProjectPage(BasePage):
         self.select_random_department()
         self.select_random_type_project()
         self.select_random_kind_project()
-
 
     # === Выбор из выпадающих списков ===
 

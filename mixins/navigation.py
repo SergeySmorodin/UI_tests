@@ -21,7 +21,6 @@ class NavigationMixin:
 
     def open(self, config: VPNConfig, page_path: str, title_locator: Locator = None):
         """Открыть страницу и дождаться загрузки"""
-        self.config = config
         self.open_relative(config, page_path)
         if title_locator:
             self.wait_for_element(title_locator)

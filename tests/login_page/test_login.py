@@ -6,31 +6,24 @@ from pages.login_page import LoginPage
 @pytest.mark.usefixtures("vpn_connection")
 class TestLoginPage:
 
-    def test_successful_login(self, page, test_config):
-        """Тест успешной авторизации"""
-        login_page = LoginPage(page)
-        login_page.login(test_config)
-
-        assert login_page.is_login_successful(), \
-            f"Авторизация не выполнена. Текущий URL: {page.url}"
-        print(f"✓ Успешная авторизация. URL: {page.url}")
-
-    def test_login_form_visibility(self, page, test_config):
+    def test_login_form_visibility(self, login_page, test_config):
         """Тест отображения формы логина"""
-        login_page = LoginPage(page)
         login_page.open(test_config)
         login_page.check_login_form_visible()
+
+    def test_login_successful(self, authenticated_login_page):
+        """Тест успешной авторизации"""
+        assert authenticated_login_page.is_login_successful()
 
     def test_login_with_wrong_password(self, page, test_config):
         """Тест с неверным паролем"""
         login_page = LoginPage(page)
         login_page.open(test_config)
 
-        login_page.username_input.fill(test_config.login)
-        login_page.password_input.fill("wrong_password")
+        login_page.fill_credentials(test_config.login, "wrong_password")
         login_page.click_login_button()
+        login_page.wait_for_navigation()
 
-        page.wait_for_load_state('networkidle')
         error_message = login_page.get_error_message()
 
         if error_message:
