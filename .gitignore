@@ -20,6 +20,7 @@ coverage.xml
 allure-results/
 allure-report/
 allure-reports/
+allure-history/
 
 # --- IDE ---
 .vscode/

@@ -212,11 +212,17 @@ class AllurePublisher:
         original_dir = os.getcwd()
         try:
             os.chdir(self.history_dir)
+
             if not Path(".git").exists():
                 subprocess.run("git init", shell=True, check=True)
 
-            subprocess.run("git checkout -b gh-pages 2>$null", shell=True)
-            subprocess.run("git checkout gh-pages", shell=True)
+            result = subprocess.run("git branch --list gh-pages", shell=True,
+                                    capture_output=True, text=True)
+            if "gh-pages" in result.stdout:
+                subprocess.run("git checkout gh-pages", shell=True, check=True)
+            else:
+                subprocess.run("git checkout -b gh-pages", shell=True, check=True)
+
             subprocess.run("git add .", shell=True, check=True)
 
             result = subprocess.run("git status --porcelain", shell=True,
@@ -224,11 +230,20 @@ class AllurePublisher:
             if result.stdout.strip():
                 subprocess.run(f'git commit -m "Update reports - {self.build_number}"',
                                shell=True, check=True)
-                if subprocess.run("git remote get-url origin", shell=True,
-                                  capture_output=True).returncode != 0:
+
+                # Всегда обновляем remote на актуальный
+                result = subprocess.run("git remote get-url origin", shell=True,
+                                        capture_output=True, text=True)
+                if result.returncode != 0:
                     subprocess.run(f"git remote add origin {self.repo_url}",
                                    shell=True, check=True)
+                else:
+                    # Обновляем URL, если он изменился
+                    subprocess.run(f"git remote set-url origin {self.repo_url}",
+                                   shell=True, check=True)
+
                 subprocess.run("git push -f origin gh-pages", shell=True, check=True)
+
             return True
         except subprocess.CalledProcessError:
             return False
@@ -264,7 +279,7 @@ if __name__ == "__main__":
     parser.add_argument("--skip-tests", action="store_true")
     parser.add_argument("--no-browser", action="store_true")
     parser.add_argument("--no-publish", action="store_true")
-    parser.add_argument("--repo-url", default="https://sergeysmorodin.github.io/UI_tests/")
+    parser.add_argument("--repo-url", default="https://github.com/SergeySmorodin/UI_tests.git")
     args = parser.parse_args()
 
     publisher = AllurePublisher(repo_url=args.repo_url)
