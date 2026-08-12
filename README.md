@@ -6,9 +6,6 @@ pytest-playwright
 # Фабрика тестовых даанных
 factory_boy
 
-# для анализа покрытия кода тестами
-pytest-cov
-
 # для параллельного запуска тестов 
 pytest-xdist
 
@@ -18,7 +15,7 @@ allure-pytest
 
 
 # Установка библиотек
-```poetry add pytest-playwright factory_boy pytest-cov pytest-xdist allure-pytest```
+```poetry add pytest-playwright factory_boy pytest-xdist allure-pytest```
 
 ```playwright install```
 
@@ -62,26 +59,32 @@ DEFAULT_TIMEOUT=3000
 ```pytest test_login.py::test_successful_login```
 
 
-#### Проверка покрытия кода тестами
-* Очистка отчетов + запуск тестов + покрытие кода
-```coverage erase; Remove-Item -Recurse -Force htmlcov -ErrorAction SilentlyContinue; pytest -n auto --cov=. --cov-config=.coveragerc --cov-report=html --cov-report=term-missing```
-
-
-#### Генерация отчетов Allure
+# Генерация отчетов Allure локально
 * Формирование папки с отчетами + запуск сервера allure
 ```pytest -n auto --dist loadscope --alluredir=./allure-results;allure serve ./allure-results```
-
-# Запуск тестов с сохранением результатов
+* Запуск тестов с сохранением результатов
 ```pytest --alluredir=./allure-results```
-
-# Или с дополнительными опциями
+* Или с дополнительными опциями
 ```pytest --alluredir=./allure-results -v --clean-alluredir```
-
-# Просмотр отчета
+* Просмотр отчета
 ```allure serve ./allure-results```
-
-# Генерация статического отчета
+* Генерация статического отчета
 ```allure generate ./allure-results -o ./allure-report --clean```
+
+
+# Публикация отчетов Allure на гитхаб
+* Полный цикл: тесты → отчёт → публикация → открыть в браузере
+```python publish_allure.py```
+* Только тесты и отчёт (без публикации)
+```python allure_publisher.py --no-publish```
+* Только отчёт из готовых результатов (тесты уже были)
+```python allure_publisher.py --skip-tests```
+* Тесты + отчёт, без открытия браузера
+```python allure_publisher.py --no-browser```
+* Только отчёт локально, без тестов и без публикации
+```python allure_publisher.py --skip-tests --no-publish```
+* С другим репозиторием
+```python allure_publisher.py --repo-url https://github.com/username/repo.git```
 
 
 #### Полезные команды playwright
