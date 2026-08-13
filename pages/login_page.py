@@ -18,7 +18,7 @@ class LoginPage(BasePage):
         self.username_input = self.page.locator("#username")
         self.password_input = self.page.locator("#pass")
         self.login_button = self.page.get_by_role("button", name="Вход")
-        self.error_message = self.page.locator('.error-message, .alert-danger')
+        self.lk_link = self.page.get_by_role("link", name="Личный кабинет")
 
     def open(self, config: VPNConfig):
         """Открыть страницу логина"""
@@ -49,24 +49,20 @@ class LoginPage(BasePage):
 
     def is_login_successful(self) -> bool:
         """Проверить успешность входа"""
+        # Ждём либо ухода со страницы логина, либо появления ошибки
         try:
-            # Ждем пока URL перестанет содержать "login"
-            self.page.wait_for_url("**/!(*login*)", timeout=1000)
-            print(f"✓ URL изменился: {self.page.url}")
+            self.page.wait_for_url(lambda url: "login" not in url.lower(), timeout=5000)
+            print(f"✓ Текущий URL: {self.page.url}")
             return True
         except:
-            current_url = self.get_current_url().lower()
+            print(f"✗ Всё ещё на странице логина: {self.page.url}")
+            error = self.get_error_message()
+            if error:
+                print(f"Ошибка: {error}")
+            return False
 
-            if "login" in current_url:
-                error = self.get_error_message()
-                if error:
-                    print(f"Авторизация не удалась: {error}")
-                else:
-                    print(f"Авторизация не удалась без сообщения об ошибке")
-                return False
+    def is_lk_in_page(self) -> bool:
+        """Проверить наличие ссылки на личный кабинет"""
+        self.wait_for_timeout(1000)
 
-            return True
-
-    def get_error_message(self) -> str:
-        """Получить сообщение об ошибке"""
-        return self.get_text(self.error_message)
+        return self.lk_link.is_visible()

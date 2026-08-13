@@ -26,6 +26,16 @@ class BasePage(
     def __init__(self, page: Page):
         self.page = page
         self.timeout = 10000
+        self._init_common_locators()
+
+    def _init_common_locators(self):
+        """Инициализация общих локаторов для всех страниц"""
+        self.error_message = self.page.locator(
+            '.error-message, .alert-danger, .error, .alert, [role="alert"], .invalid-feedback, .text-danger').first
+
+    def get_error_message(self) -> str:
+        """Получить текст сообщения об ошибке"""
+        return self.get_text(self.error_message)
 
     @classmethod
     def open_page(cls, page: Page, config: VPNConfig, title_locator: Locator = None):

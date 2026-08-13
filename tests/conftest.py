@@ -4,6 +4,7 @@ from factories.contract_factory import ContractFactory
 from factories.project_factory import ProjectFactory
 from pages.contract_page import ContractPage
 from pages.login_page import LoginPage
+from pages.personal_account_page import PersonalAccountPage
 from pages.project_page import ProjectPage
 
 
@@ -43,6 +44,14 @@ def project_page(authenticated_page, test_config):
 def contract_page(authenticated_page, test_config):
     """Страница создания контракта"""
     page = ContractPage(authenticated_page)
+    page.open(test_config)
+    return page
+
+
+@pytest.fixture
+def personal_account_page(authenticated_page, test_config):
+    """Страница личного кабинета"""
+    page = PersonalAccountPage(authenticated_page)
     page.open(test_config)
     return page
 

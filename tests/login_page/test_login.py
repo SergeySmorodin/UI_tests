@@ -1,5 +1,5 @@
-import pytest
 import allure
+import pytest
 
 from pages.login_page import LoginPage
 
@@ -27,7 +27,10 @@ class TestLoginPage:
     def test_login_successful(self, authenticated_login_page):
         """Тест успешной авторизации"""
         with allure.step("Проверить успешность входа"):
-            assert authenticated_login_page.is_login_successful()
+            assert authenticated_login_page.is_login_successful(), "Вход не выполнен успешно"
+
+        with allure.step("Проверить наличие ссылки на личный кабинет"):
+            assert authenticated_login_page.is_lk_in_page(), "Ссылка на личный кабинет отсутствует"
 
     @allure.story("Негативные сценарии")
     @allure.title("Проверка входа с неверным паролем")
