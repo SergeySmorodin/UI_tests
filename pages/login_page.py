@@ -51,7 +51,7 @@ class LoginPage(BasePage):
         """Проверить успешность входа"""
         # Ждём либо ухода со страницы логина, либо появления ошибки
         try:
-            self.page.wait_for_url(lambda url: "login" not in url.lower(), timeout=5000)
+            self.page.wait_for_url(lambda url: self.PAGE not in url.lower(), timeout=5000)
             print(f"✓ Текущий URL: {self.page.url}")
             return True
         except:
